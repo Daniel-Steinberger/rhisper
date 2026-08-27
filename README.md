@@ -158,6 +158,16 @@ xhisper --<your-input-switch-key>
 
 Key chords (like ctrl-space) not available yet.
 
+**Keyboard layout for typed symbols:**
+
+ASCII letters and digits are typed by physical key position, but punctuation symbols differ between layouts. If you use a Danish keyboard layout and get wrong characters (e.g. `'` comes out as `ø`, `?` as `_`), set the layout in `~/.config/xhisper/xhisperrc`:
+
+```
+keyboard-layout : dk
+```
+
+Supported layouts: `us`, `dk`. The layout is read by the daemon at startup; the daemon is restarted automatically when the setting changes.
+
 ---
 
 ## Configuration
@@ -190,6 +200,7 @@ make show
 | `paste-mode` | `type` | `type` (layout-sensitive, keeps clipboard), `clipboard` (always paste via clipboard, overwrites clipboard), or `clipboard-restore` (like `clipboard`, but saves and restores previous clipboard content) |
 | `non-ascii-initial-delay` | `0.15` | Seconds to wait before pasting the first non-ASCII clipboard chunk — increase if the first character is wrong |
 | `non-ascii-default-delay` | `0.025` | Seconds to wait before subsequent non-ASCII clipboard chunks |
+| `keyboard-layout` | `us` | Keyboard layout used when typing ASCII characters (`us` or `dk`) — see [Keyboard layout for typed symbols](#usage) |
 | `silence-threshold` | `-50` | Max volume in dB to consider a recording silent (e.g. `-50` means anything quieter is discarded) |
 | `silence-percentage` | `95` | Percentage of the recording that must be below `silence-threshold` to be considered silent |
 

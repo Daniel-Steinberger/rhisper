@@ -14,6 +14,7 @@
 # - silence-percentage : percentage of recording that must be silent (e.g., 95)
 # - non-ascii-initial-delay : sleep after first non-ASCII paste (seconds)
 # - non-ascii-default-delay : sleep after subsequent non-ASCII pastes (seconds)
+# - keyboard-layout : keyboard layout used when typing (us | dk)
 
 # Requirements:
 # - pipewire, pipewire-utils (audio)
@@ -86,6 +87,7 @@ silence_threshold=-50
 silence_percentage=95
 non_ascii_initial_delay=0.1
 non_ascii_default_delay=0.025
+keyboard_layout="us"
 
 if [ -f "$CONFIG_FILE" ]; then
   while IFS=: read -r key value || [ -n "$key" ]; do
@@ -106,13 +108,23 @@ if [ -f "$CONFIG_FILE" ]; then
       silence-percentage) silence_percentage="$value" ;;
       non-ascii-initial-delay) non_ascii_initial_delay="$value" ;;
       non-ascii-default-delay) non_ascii_default_delay="$value" ;;
+      keyboard-layout) keyboard_layout="$value" ;;
     esac
   done < "$CONFIG_FILE"
 fi
 
 # Auto-start daemon if not running
+DAEMON_LAYOUT_FILE="/tmp/xhispertoold.layout"
+if pgrep -x xhispertoold > /dev/null; then
+    # Restart the daemon if its layout is stale (layout is read at startup).
+    running_layout=$(cat "$DAEMON_LAYOUT_FILE" 2>/dev/null)
+    if [ "$running_layout" != "$keyboard_layout" ]; then
+        pkill -x xhispertoold
+        sleep 0.3
+    fi
+fi
 if ! pgrep -x xhispertoold > /dev/null; then
-    "$XHISPERTOOLD" 2>> /tmp/xhispertoold.log &
+    XHISPER_LAYOUT="$keyboard_layout" "$XHISPERTOOLD" 2>> /tmp/xhispertoold.log &
     sleep 1  # Give daemon time to start
 
     # Verify daemon started successfully

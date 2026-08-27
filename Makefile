@@ -17,15 +17,18 @@ setup:
 show:
 	@cat $(HOME)/.config/xhisper/xhisperrc 2>/dev/null || echo "Config file not found at ~/.config/xhisper/xhisperrc"
 
-xhispertool: xhispertool.c
-	$(CC) $(CFLAGS) xhispertool.c -o xhispertool
+xhispertool: xhispertool.c keymap.c keymap.h
+	$(CC) $(CFLAGS) xhispertool.c keymap.c -o xhispertool
 	ln -sf xhispertool xhispertoold
 
 tests/test_uinput_integration: tests/test_uinput_integration.c
 	$(CC) $(CFLAGS) tests/test_uinput_integration.c -o tests/test_uinput_integration
 
-tests/test_xhispertool: tests/test_xhispertool.c xhispertool.c
-	$(CC) $(CFLAGS) -I tests tests/test_xhispertool.c -o tests/test_xhispertool
+tests/test_xhispertool: tests/test_xhispertool.c xhispertool.c keymap.c keymap.h
+	$(CC) $(CFLAGS) -I tests tests/test_xhispertool.c keymap.c -o tests/test_xhispertool
+
+tests/test_keymap: tests/test_keymap.c keymap.c keymap.h tests/testutil.h
+	$(CC) $(CFLAGS) -I tests tests/test_keymap.c keymap.c -o tests/test_keymap
 
 install: xhispertool xhisper.sh
 	install -d $(DESTDIR)$(BINDIR)
@@ -38,12 +41,13 @@ uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/xhispertool
 	rm -f $(DESTDIR)$(BINDIR)/xhispertoold
 
-check: tests/test_xhispertool
+check: tests/test_xhispertool tests/test_keymap
 	@echo "=== C tests ===" && tests/test_xhispertool
+	@echo "=== Keymap tests ===" && tests/test_keymap
 	@echo "=== Shell tests ===" && bash tests/test_paste.sh
 
 clean:
 	rm -f xhispertool xhispertoold
-	rm -f tests/test_uinput_integration tests/test_xhispertool
+	rm -f tests/test_uinput_integration tests/test_xhispertool tests/test_keymap
 
 .PHONY: all install uninstall clean check
