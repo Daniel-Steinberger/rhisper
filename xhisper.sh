@@ -8,6 +8,8 @@
 # - long-recording-threshold : threshold for using large vs turbo model (seconds)
 # - transcription-prompt : context words for better Whisper accuracy
 # - language : ISO-639-1 code to force transcription language (e.g., de); empty = auto-detect
+# - paste-mode : "type" (default, layout-sensitive, keeps clipboard), "clipboard" (always paste, overwrites clipboard),
+#                or "clipboard-restore" (like clipboard, but saves and restores previous clipboard content)
 # - silence-threshold : max volume in dB to consider silent (e.g., -50)
 # - silence-percentage : percentage of recording that must be silent (e.g., 95)
 # - non-ascii-initial-delay : sleep after first non-ASCII paste (seconds)
@@ -79,6 +81,7 @@ PROCESS_PATTERN="pw-record.*$RECORDING"
 long_recording_threshold=1000
 transcription_prompt=""
 language=""
+paste_mode="type"
 silence_threshold=-50
 silence_percentage=95
 non_ascii_initial_delay=0.1
@@ -98,6 +101,7 @@ if [ -f "$CONFIG_FILE" ]; then
       long-recording-threshold) long_recording_threshold="$value" ;;
       transcription-prompt) transcription_prompt="$value" ;;
       language) language="$value" ;;
+      paste-mode) paste_mode="$value" ;;
       silence-threshold) silence_threshold="$value" ;;
       silence-percentage) silence_percentage="$value" ;;
       non-ascii-initial-delay) non_ascii_initial_delay="$value" ;;
@@ -148,6 +152,21 @@ press_wrap_key() {
 
 paste() {
   local text="$1"
+
+  # Clipboard modes: send the entire text in one paste (layout-independent, fast).
+  # Requires Ctrl+V to work in the target app (terminals need Ctrl+Shift+V — see README).
+  if [ "$paste_mode" = "clipboard" ] || [ "$paste_mode" = "clipboard-restore" ]; then
+    local old_clipboard=""
+    [ "$paste_mode" = "clipboard-restore" ] && old_clipboard=$($CLIP_PASTE 2>/dev/null || true)
+    echo -n "$text" | $CLIP_COPY
+    sleep "$non_ascii_initial_delay"  # Wait for clipboard tool to populate the selection before pasting
+    "$XHISPERTOOL" paste
+    if [ "$paste_mode" = "clipboard-restore" ]; then
+      sleep "$non_ascii_initial_delay"  # Brief pause before restoring to avoid a race with the paste landing
+      echo -n "$old_clipboard" | $CLIP_COPY
+    fi
+    return
+  fi
 
   # Save clipboard so we can restore it after — non-ASCII chars require writing
   # to the clipboard, which would otherwise destroy the user's copied content
