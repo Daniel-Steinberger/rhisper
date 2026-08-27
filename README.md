@@ -3,6 +3,7 @@
   <img src="demo.gif" alt="xhisper demo" width="300">
   <br><br>
   <a href="https://github.com/lv10/xhisper/actions/workflows/ci.yml"><img src="https://github.com/lv10/xhisper/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://buymeacoffee.com/luisvillamg"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-donate-ffdd00?logo=buy-me-a-coffee&logoColor=black" alt="Buy me a coffee"></a>
   <br><br>
 </div>
 
