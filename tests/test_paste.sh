@@ -90,6 +90,7 @@ EOF
   WRAP_KEY=""
   non_ascii_initial_delay=0
   non_ascii_default_delay=0
+  paste_mode="type"
 }
 
 teardown() {
@@ -285,6 +286,51 @@ test_mixed_ascii_and_non_ascii_order_preserved() {
   teardown
 }
 
+# ── Tests: paste-mode option ─────────────────────────────────────────────────
+
+test_paste_mode_clipboard_sends_whole_text_via_clipboard() {
+  echo "test_paste_mode_clipboard_sends_whole_text_via_clipboard"
+  INITIAL_CLIPBOARD="my precious clipboard"
+  setup
+  load_paste_fn
+  paste_mode="clipboard"
+
+  paste "Hello, world!"
+
+  local log
+  log=$(cat "$CALL_LOG_FILE")
+  assert_contains "whole text written to clipboard" "wl-copy:[Hello, world!]" "$log"
+  assert_contains "xhispertool paste called" "xhispertool paste" "$log"
+  assert_not_contains "ASCII chars not typed individually in clipboard mode" "xhispertool type" "$log"
+
+  local final_clipboard
+  final_clipboard=$(cat "$CLIPBOARD_FILE")
+  assert_equals "clipboard left with pasted text (not restored)" "Hello, world!" "$final_clipboard"
+
+  teardown
+}
+
+test_paste_mode_clipboard_restore_restores_previous_clipboard() {
+  echo "test_paste_mode_clipboard_restore_restores_previous_clipboard"
+  INITIAL_CLIPBOARD="my precious clipboard"
+  setup
+  load_paste_fn
+  paste_mode="clipboard-restore"
+
+  paste "Hello, world!"
+
+  local log
+  log=$(cat "$CALL_LOG_FILE")
+  assert_contains "whole text written to clipboard" "wl-copy:[Hello, world!]" "$log"
+  assert_contains "xhispertool paste called" "xhispertool paste" "$log"
+
+  local final_clipboard
+  final_clipboard=$(cat "$CLIPBOARD_FILE")
+  assert_equals "clipboard restored to original after paste" "my precious clipboard" "$final_clipboard"
+
+  teardown
+}
+
 # Source only the transcribe() function from xhisper.sh by extracting it
 load_transcribe_fn() {
   local script_dir
@@ -375,6 +421,10 @@ echo ""
 test_sleep_before_paste_not_after
 echo ""
 test_mixed_ascii_and_non_ascii_order_preserved
+echo ""
+test_paste_mode_clipboard_sends_whole_text_via_clipboard
+echo ""
+test_paste_mode_clipboard_restore_restores_previous_clipboard
 
 echo ""
 echo "Running transcribe() tests..."

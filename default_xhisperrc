@@ -8,6 +8,11 @@ transcription-prompt     : ""
 # language: ISO-639-1 code (e.g., de, en, fr). Empty = auto-detect.
 language                 : ""
 
+# paste-mode: "type" (layout-sensitive, keeps clipboard),
+#             "clipboard" (always paste via clipboard, overwrites clipboard), or
+#             "clipboard-restore" (like clipboard, but saves and restores previous clipboard content)
+paste-mode               : "type"
+
 # Paste Timing (seconds):
 non-ascii-initial-delay : 0.15 # Increase this if first character comes out wrong.
 non-ascii-default-delay : 0.025
