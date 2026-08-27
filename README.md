@@ -2,6 +2,8 @@
   <h1>xhisper <i>/ˈzɪspər/</i></h1>
   <img src="demo.gif" alt="xhisper demo" width="300">
   <br><br>
+  <a href="https://github.com/lv10/xhisper/actions/workflows/ci.yml"><img src="https://github.com/lv10/xhisper/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <br><br>
 </div>
 
 Dictation at cursor for Linux.
@@ -206,7 +208,9 @@ Run the test suite:
 make check
 ```
 
-This compiles and runs the C unit tests (`tests/test_xhispertool.c`) followed by the shell tests (`tests/test_paste.sh`). No external test framework is required.
+This compiles and runs the C unit tests (`tests/test_xhispertool.c` and, once keyboard-layout support lands, `tests/test_keymap.c`) followed by the shell tests (`tests/test_paste.sh`). No external test framework is required.
+
+Every push and pull request against `main` runs the same `make check` in CI (see `.github/workflows/ci.yml`), plus a non-blocking `shellcheck` pass over the shell scripts.
 
 ---
 
