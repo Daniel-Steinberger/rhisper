@@ -10,3 +10,4 @@ xhispertoold
 test
 tests/test_xhispertool
 tests/test_uinput_integration
+tests/test_keymap
