@@ -36,6 +36,14 @@ for arg in "$@"; do
       fi
       exit 0
       ;;
+    --config)
+      if [ -f "$CONFIG_FILE" ]; then
+        cat "$CONFIG_FILE"
+      else
+        echo "No config file found at $CONFIG_FILE" >&2
+      fi
+      exit 0
+      ;;
     --leftalt|--rightalt|--leftctrl|--rightctrl|--leftshift|--rightshift|--super)
       if [ -n "$WRAP_KEY" ]; then
         echo "Error: Multiple wrap keys not yet supported" >&2
@@ -61,6 +69,7 @@ else
   XHISPERTOOLD="xhispertoold"
 fi
 
+CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/xhisper/xhisperrc"
 RECORDING="/tmp/xhisper.wav"
 LOGFILE="/tmp/xhisper.log"
 PROCESS_PATTERN="pw-record.*$RECORDING"
@@ -72,8 +81,6 @@ silence_threshold=-50
 silence_percentage=95
 non_ascii_initial_delay=0.1
 non_ascii_default_delay=0.025
-
-CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/xhisper/xhisperrc"
 
 if [ -f "$CONFIG_FILE" ]; then
   while IFS=: read -r key value || [ -n "$key" ]; do

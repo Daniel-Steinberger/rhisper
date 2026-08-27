@@ -65,6 +65,7 @@ GROQ_API_KEY=<your_API_key>
 ```sh
 git clone --depth 1 https://github.com/lv10/xhisper.git
 cd xhisper && make
+make config
 sudo make install
 ```
 
@@ -158,11 +159,24 @@ Key chords (like ctrl-space) not available yet.
 
 ## Configuration
 
-Configuration is read from `~/.config/xhisper/xhisperrc`:
+Configuration is read from `~/.config/xhisper/xhisperrc`.
 
+You can initialize it by running:
+```sh
+make config
+```
+
+Or manually:
 ```sh
 mkdir -p ~/.config/xhisper
 cp default_xhisperrc ~/.config/xhisper/xhisperrc
+```
+
+To view your current configuration:
+```sh
+xhisper --config
+# or
+make show
 ```
 
 | Option | Default | Description |

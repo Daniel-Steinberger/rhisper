@@ -7,6 +7,16 @@ BINDIR = $(PREFIX)/bin
 
 all: xhispertool tests/test_uinput_integration
 
+config:
+	bash configure.sh
+
+setup:
+	sudo usermod -aG input $(USER)
+	@echo "User added to 'input' group. Please LOG OUT and LOG IN again for changes to take effect."
+
+show:
+	@cat $(HOME)/.config/xhisper/xhisperrc 2>/dev/null || echo "Config file not found at ~/.config/xhisper/xhisperrc"
+
 xhispertool: xhispertool.c
 	$(CC) $(CFLAGS) xhispertool.c -o xhispertool
 	ln -sf xhispertool xhispertoold
