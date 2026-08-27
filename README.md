@@ -186,6 +186,7 @@ make show
 |--------|---------|-------------|
 | `long-recording-threshold` | `1000` | Duration in ms above which the larger `whisper-large-v3` model is used instead of `whisper-large-v3-turbo` |
 | `transcription-prompt` | _(empty)_ | Context hint passed to Whisper to improve accuracy (e.g. common words, names, or domain vocabulary) |
+| `language` | _(empty)_ | ISO-639-1 code (e.g. `de`, `en`, `fr`) to force the transcription language — leave empty to let Whisper auto-detect |
 | `non-ascii-initial-delay` | `0.15` | Seconds to wait before pasting the first non-ASCII clipboard chunk — increase if the first character is wrong |
 | `non-ascii-default-delay` | `0.025` | Seconds to wait before subsequent non-ASCII clipboard chunks |
 | `silence-threshold` | `-50` | Max volume in dB to consider a recording silent (e.g. `-50` means anything quieter is discarded) |

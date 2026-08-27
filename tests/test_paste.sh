@@ -285,6 +285,75 @@ test_mixed_ascii_and_non_ascii_order_preserved() {
   teardown
 }
 
+# Source only the transcribe() function from xhisper.sh by extracting it
+load_transcribe_fn() {
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  source <(sed -n '/^transcribe()/,/^}/p' "$script_dir/../xhisper.sh")
+}
+
+setup_transcribe_mocks() {
+  CALL_LOG_FILE=$(mktemp)
+  export CALL_LOG_FILE
+
+  curl() {
+    echo "curl $*" >> "$CALL_LOG_FILE"
+    echo '{"text": " mocked transcription"}'
+  }
+  export -f curl
+
+  get_duration() { echo 5; }
+  export -f get_duration
+
+  bc() { echo 0; }
+  export -f bc
+
+  logging_end_and_write_to_logfile() { :; }
+  export -f logging_end_and_write_to_logfile
+
+  GROQ_API_KEY="test-key"
+  long_recording_threshold=1000
+  transcription_prompt=""
+  language=""
+}
+
+teardown_transcribe_mocks() {
+  rm -f "$CALL_LOG_FILE"
+  unset -f curl get_duration bc logging_end_and_write_to_logfile
+}
+
+# ── Tests: transcribe() language option ────────────────────────────────────────
+
+test_no_language_omits_language_arg() {
+  echo "test_no_language_omits_language_arg"
+  setup_transcribe_mocks
+  load_transcribe_fn
+  language=""
+
+  transcribe "/tmp/fake.wav" > /dev/null
+
+  local log
+  log=$(cat "$CALL_LOG_FILE")
+  assert_not_contains "no language arg passed to curl when language is unset" "language=" "$log"
+
+  teardown_transcribe_mocks
+}
+
+test_language_set_adds_language_arg() {
+  echo "test_language_set_adds_language_arg"
+  setup_transcribe_mocks
+  load_transcribe_fn
+  language="de"
+
+  transcribe "/tmp/fake.wav" > /dev/null
+
+  local log
+  log=$(cat "$CALL_LOG_FILE")
+  assert_contains "language arg passed to curl when language is set" "language=de" "$log"
+
+  teardown_transcribe_mocks
+}
+
 # ── Run all tests ─────────────────────────────────────────────────────────────
 
 echo ""
@@ -306,6 +375,14 @@ echo ""
 test_sleep_before_paste_not_after
 echo ""
 test_mixed_ascii_and_non_ascii_order_preserved
+
+echo ""
+echo "Running transcribe() tests..."
+echo "────────────────────────"
+
+test_no_language_omits_language_arg
+echo ""
+test_language_set_adds_language_arg
 
 echo ""
 echo "────────────────────────"
