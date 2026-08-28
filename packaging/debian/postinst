@@ -1,0 +1,14 @@
+#!/bin/sh
+# Creates the xhispertoold symlink (argv[0]-dispatch trigger for daemon
+# mode) and reloads udev so the uinput access rule takes effect without a
+# reboot.
+set -e
+
+ln -sf xhispertool /usr/bin/xhispertoold
+
+if command -v udevadm >/dev/null 2>&1; then
+    udevadm control --reload-rules || true
+    udevadm trigger --subsystem-match=misc --attr-match=name=uinput || true
+fi
+
+exit 0

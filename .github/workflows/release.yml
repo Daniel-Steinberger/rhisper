@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  verify-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check tag matches Cargo.toml version
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          cargo_version="$(grep -m1 '^version' Cargo.toml | sed -E 's/version = "(.*)"/\1/')"
+          if [ "$tag_version" != "$cargo_version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match Cargo.toml version $cargo_version"
+            exit 1
+          fi
+
+  build:
+    needs: verify-version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y nasm
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build release binaries
+        run: cargo build --release --locked
+
+      - name: Run test suite
+        run: cargo test --release --locked
+
+      - name: Install packaging tools
+        run: cargo install cargo-deb cargo-generate-rpm --locked
+
+      - name: Build .deb
+        run: cargo deb --no-build
+
+      - name: Build .rpm
+        run: cargo generate-rpm
+
+      - name: Build AUR source tarball
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          git archive --format=tar.gz --prefix="xhisper-${version}/" -o "xhisper-${version}.tar.gz" "$GITHUB_REF_NAME"
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: |
+            target/debian/*.deb
+            target/generate-rpm/*.rpm
+            xhisper-*.tar.gz
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+
+      - name: Create draft GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          files: |
+            *.deb
+            *.rpm
+            xhisper-*.tar.gz

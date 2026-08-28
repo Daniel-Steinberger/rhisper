@@ -1,13 +1,10 @@
 *.swp
 *.un
 *~
-*.o
 CLAUDE.md
 context.txt
 archive/
-xhispertool
-xhispertoold
-test
-tests/test_xhispertool
-tests/test_uinput_integration
-tests/test_keymap
+
+# Added by cargo
+
+/target
